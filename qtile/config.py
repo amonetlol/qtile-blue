@@ -341,7 +341,7 @@ screens = [
             ],
             35,  # Bar Height
             background="#1a161c",
-            margin=[10, 20, 0, 20],
+            margin=[10, 10, 0, 10],
             # background="#1a161c0",
             # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
             # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
