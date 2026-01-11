@@ -1,101 +1,95 @@
 #!/usr/bin/env bash
-
 # Current Theme
 dir="$HOME/.config/rofi/powermenu/"
 theme='config'
 
 # CMDs
-uptime="`uptime -p | sed -e 's/up //g'`"
-host=`hostname`
+uptime="$(uptime -p | sed 's/up //')"
+host="$(hostname)"
 
-# Options
+# Options (ícones)
 shutdown=''
 reboot=''
 lock=''
 suspend=''
 logout=''
-yes=''
-no=''
 
 # Rofi CMD
 rofi_cmd() {
-	rofi -dmenu \
-		-p "Goodbye $USER" \
-		-mesg "Uptime: $uptime" \
-		-theme ${dir}/${theme}.rasi
-}
-
-# Confirmation CMD
-confirm_cmd() {
-	rofi -theme-str 'window {location: center; anchor: center; fullscreen: false; width: 350px;}' \
-		-theme-str 'mainbox {children: [ "message", "listview" ];}' \
-		-theme-str 'listview {columns: 2; lines: 1;}' \
-		-theme-str 'element-text {horizontal-align: 0.5;}' \
-		-theme-str 'textbox {horizontal-align: 0.5;}' \
-		-dmenu \
-		-p 'Confirmation' \
-		-mesg 'Are you Sure?' \
-		-theme ${dir}/${theme}.rasi
-}
-
-# Ask for confirmation
-confirm_exit() {
-	echo -e "$yes\n$no" | confirm_cmd
+    rofi -dmenu \
+        -p "Goodbye $USER" \
+        -mesg "Uptime: $uptime" \
+        -theme "${dir}/${theme}.rasi"
 }
 
 # Pass variables to rofi dmenu
 run_rofi() {
-	echo -e "$lock\n$suspend\n$logout\n$reboot\n$shutdown" | rofi_cmd
+    echo -e "$lock\n$suspend\n$logout\n$reboot\n$shutdown" | rofi_cmd
 }
 
-# Execute Command
-run_cmd() {
-	selected="$(confirm_exit)"
-	if [[ "$selected" == "$yes" ]]; then
-		if [[ $1 == '--shutdown' ]]; then
-			systemctl poweroff
-		elif [[ $1 == '--reboot' ]]; then
-			systemctl reboot
-		elif [[ $1 == '--suspend' ]]; then
-			mpc -q pause
-			amixer set Master mute
-			systemctl suspend
-		elif [[ $1 == '--logout' ]]; then
-			if [[ "$DESKTOP_SESSION" == 'openbox' ]]; then
-				openbox --exit
-			elif [[ "$DESKTOP_SESSION" == 'bspwm' ]]; then
-				bspc quit
-			elif [[ "$DESKTOP_SESSION" == 'i3' ]]; then
-				i3-msg exit
-			elif [[ "$DESKTOP_SESSION" == 'plasma' ]]; then
-				qdbus org.kde.ksmserver /KSMServer logout 0 0 0
-			fi
-		fi
-	else
-		exit 0
-	fi
+# Execute selected action immediately (sem confirmação)
+execute_action() {
+    case $1 in
+        "$shutdown")
+            systemctl poweroff
+            ;;
+        "$reboot")
+            systemctl reboot
+            ;;
+        "$suspend")
+            # Opcional: pausar música e mutar som antes de suspender
+            mpc -q pause 2>/dev/null
+            amixer set Master mute 2>/dev/null
+            systemctl suspend
+            ;;
+        "$logout")
+            case "$DESKTOP_SESSION" in
+                openbox)
+                    openbox --exit
+                    ;;
+                bspwm)
+                    bspc quit
+                    ;;
+                i3)
+                    i3-msg exit
+                    ;;
+                plasma)
+                    qdbus org.kde.ksmserver /KSMServer logout 0 0 0
+                    ;;
+                qtile)
+                    qtile cmd-obj -o cmd -f shutdown
+                    ;;
+                *)
+                    # Fallback caso não reconheça a sessão
+                    echo "Sessão desconhecida: $DESKTOP_SESSION" >&2
+                    exit 1
+                    ;;
+            esac
+            ;;
+        "$lock")
+            if [[ -x '/usr/bin/betterlockscreen' ]]; then
+                betterlockscreen -l
+            elif [[ -x '/usr/bin/i3lock' ]]; then
+                i3lock -c 000000
+            else
+                # Último recurso bem básico
+                xset s activate
+            fi
+            ;;
+        *)
+            # Caso estranho (não deveria acontecer)
+            exit 1
+            ;;
+    esac
 }
 
-# Actions
+# ===============================================
+# Programa principal
+# ===============================================
+
 chosen="$(run_rofi)"
-case ${chosen} in
-    $shutdown)
-		run_cmd --shutdown
-        ;;
-    $reboot)
-		run_cmd --reboot
-        ;;
-    $lock)
-		if [[ -x '/usr/bin/betterlockscreen' ]]; then
-			betterlockscreen -l
-		elif [[ -x '/usr/bin/i3lock' ]]; then
-			i3lock
-		fi
-        ;;
-    $suspend)
-		run_cmd --suspend
-        ;;
-    $logout)
-		run_cmd --logout
-        ;;
-esac
+
+# Se o usuário cancelou (ESC ou clicou fora)
+[[ -z "$chosen" ]] && exit 0
+
+execute_action "$chosen"
