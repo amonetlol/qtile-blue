@@ -1,10 +1,11 @@
 #!/bin/bash
 
-WALLPAPER_DIR="$HOME/wallpapers"
+WALLPAPER_DIR="$HOME/walls"
 wallpapers=$(ls "$WALLPAPER_DIR")
 
 # Optional: Get current wallpaper name from nitrogen or swww
-current_wallpaper_name=$(basename "$(find ~/.config/nitrogen/bg-saved.cfg -type f -exec grep -m1 'file=' {} \; | cut -d'=' -f2 2>/dev/null)")
+#current_wallpaper_name=$(basename "$(find ~/.config/nitrogen/bg-saved.cfg -type f -exec grep -m1 'file=' {} \; | cut -d'=' -f2 2>/dev/null)")
+current_wallpaper_name=$(basename "$(find ~/.fehbg -type f -exec grep -m1 'file=' {} \; | cut -d'=' -f2 2>/dev/null)")
 
 rofi_list=""
 while IFS= read -r a; do
@@ -31,7 +32,9 @@ active_win=$(xdotool getactivewindow)
 xprop -id "$active_win" -f _NET_WM_WINDOW_OPACITY 32c -set _NET_WM_WINDOW_OPACITY 0x00000000
 sleep 0.2
 
-nitrogen --set-zoom-fill "$WALLPAPER_DIR/$selected_wallpaper" --save
+#nitrogen --set-zoom-fill "$WALLPAPER_DIR/$selected_wallpaper" --save
+
+feh --bg-fill "$WALLPAPER_DIR/$selected_wallpaper"
 
 # Fade back in
 xprop -id "$active_win" -f _NET_WM_WINDOW_OPACITY 32c -set _NET_WM_WINDOW_OPACITY 0xffffffff
