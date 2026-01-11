@@ -20,10 +20,12 @@ return {
 
     -- Set menu
     dashboard.section.buttons.val = {
-      dashboard.button("<leader> ee", "  > Toggle file tree", "<cmd>NvimTreeToggle<CR>"),
+      dashboard.button("<leader> e", "  > Toggle file tree", "<cmd>NvimTreeToggle<CR>"),
+      dashboard.button("<leader> t", "  > Focus file tree"),
       dashboard.button("<leader> ff", "󰱼  > Find File", "<cmd>Telescope find_files<CR>"),
       dashboard.button("<leader> fs", "  > Find Word", "<cmd>Telescope live_grep<CR>"),
-      dashboard.button("<leader> qq", "  > Quit NVIM", "<cmd>qa<CR>"),
+      dashboard.button("C-\\", " > Toggle Terminal"),
+      dashboard.button("C-q", "  > Quit NVIM", "<cmd>qa<CR>"),
     }
 
     -- Send config to alpha
