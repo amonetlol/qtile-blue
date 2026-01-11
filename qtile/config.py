@@ -4,131 +4,161 @@ from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 from libqtile import hook
 import subprocess
+import os
 
-mod = "mod4"
-terminal = guess_terminal()
+import sys
+from os.path import expanduser, exists, normpath, getctime
+sys.path.append(expanduser('~/.config/qtile/src'))
+
+#---------------------- Define programs ----------------------#
+mod         = "mod4"                       # Sets mod key to SUPER/WINDOWS
+alt         = "mod1"                       # Sets the alt key to left-alt key
+myTerm      = "kitty"                    # My terminal of choice
+myTerm2     = "alacritty"
+#myTerm2     = "alacritty --config-file /home/pio/.config/iSettings/alacritty/alacritty.toml"
+myBrowser   = "firefox"                   # My browser of choice
+myEditor    = "kitty -e nvim"            # My editor of choice
+myLauncher  = "rofi -show drun"            # My launcher of choice
+#myLauncher  = "rofi -show drun -config ~/.config/iSettings/themes/nordico/rofi/launcher.rasi"
+myExplorer  = "thunar"
 
 
-@hook.subscribe.startup_once
-def start_once():
-    import subprocess
+#---------------------- Define useful functions ----------------------#
 
-    subprocess.Popen(["nm-applet"])
-    subprocess.Popen(["nitrogen", "--restore"])
-    subprocess.Popen(
-        "picom --config ~/.config/picom/picom.conf &",
-        shell=True,
-        executable="/bin/bash",
-    )
-    subprocess.Popen(["dunst"])
-    subprocess.Popen(["xmodmap /home/shorya/.dotfiles/qtile/.Xmodmap"])
+# Allows you to input a name when adding treetab section.
+@lazy.layout.function
+def add_treetab_section(layout):
+    prompt = qtile.widgets_map["prompt"]
+    prompt.start_input("Section name: ", layout.cmd_add_section)
+
+# A function for hide/show all the windows in a group
+@lazy.function
+def minimize_all(qtile):
+    for win in qtile.current_group.windows:
+        if hasattr(win, "toggle_minimize"):
+            win.toggle_minimize()
+
+# A function for toggling between MAX and MONADTALL layouts
+@lazy.function
+def maximize_by_switching_layout(qtile):
+    current_layout_name = qtile.current_group.layout.name
+    if current_layout_name == 'monadtall':
+        qtile.current_group.layout = 'max'
+    elif current_layout_name == 'max':
+        qtile.current_group.layout = 'monadtall'
 
 
 keys = [
-    # Switch between windows
+    # The essentials
+    Key([mod], "Return", lazy.spawn(myTerm), desc="Terminal"),
+    #Key([mod, "shift"], "Return", lazy.spawn("alacritty"), desc="Terminal"),
+    Key([mod, "shift"], "Return", lazy.spawn(myTerm2), desc="Terminal"),
+    Key([mod], "d", lazy.spawn(myLauncher), desc='Run Launcher'),
+    Key([mod], "w", lazy.spawn(myBrowser), desc='Web browser'),
+    Key([mod], "e", lazy.spawn(myExplorer), desc='Nautilus'),
+    Key([mod], "b", lazy.hide_show_bar(position='all'), desc="Toggles the bar to show/hide"),
+    Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
+    Key([mod], "q", lazy.window.kill(), desc="Kill focused window"),
+    Key([mod, "shift"], "r", lazy.reload_config(), desc="Reload the config"),
+    Key([], "Print", lazy.spawn("/home/pio/.bin/maimshot"), desc="Screenshot menu"),
+    #Key([mod, alt], "x", lazy.spawn("/home/pio/.bin/pmenu"), desc="Logout menu"),
+    Key([mod, alt], "x", lazy.spawn("/home/pio/.config/iSettings/rofi/powermenu.sh"), desc="Logout menu"),
+    
+    # Window management
     Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
     Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
     Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
     Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
     Key([mod], "space", lazy.layout.next(), desc="Move window focus to other window"),
+
     # Move windows between left/right columns or move up/down in current stack.
     # Moving out of range in Columns layout will create new column.
-    Key(
-        [mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Move window to the left"
-    ),
-    Key(
-        [mod, "shift"],
-        "l",
+    Key([mod, "shift"], "h",
+        lazy.layout.shuffle_left(),
+        lazy.layout.move_left().when(layout=["treetab"]),
+        desc="Move window to the left/move tab left in treetab"),
+
+    Key([mod, "shift"], "l",
         lazy.layout.shuffle_right(),
-        desc="Move window to the right",
+        lazy.layout.move_right().when(layout=["treetab"]),
+        desc="Move window to the right/move tab right in treetab"),
+
+    Key([mod, "shift"], "j",
+        lazy.layout.shuffle_down(),
+        lazy.layout.section_down().when(layout=["treetab"]),
+        desc="Move window down/move down a section in treetab"
     ),
-    Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Move window down"),
-    Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
-    # Grow windows. If current window is on the edge of screen and direction
-    # will be to screen edge - window would shrink.
-    Key([mod, "control"], "h", lazy.layout.shrink(), desc="Grow window to the left"),
-    Key([mod, "control"], "l", lazy.layout.grow(), desc="Grow window to the right"),
-    # Key([mod, "control"], 2j", lazy.layout.grow_down(), desc="Grow window down"),
-    # Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
-    Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
+    Key([mod, "shift"], "k",
+        lazy.layout.shuffle_up(),
+        lazy.layout.section_up().when(layout=["treetab"]),
+        desc="Move window downup/move up a section in treetab"
+    ),
+
+    Key([mod, "shift"], "left",
+        lazy.layout.shuffle_left(),
+        lazy.layout.move_left().when(layout=["treetab"]),
+        desc="Move window to the left/move tab left in treetab"),
+
+    Key([mod, "shift"], "right",
+        lazy.layout.shuffle_right(),
+        lazy.layout.move_right().when(layout=["treetab"]),
+        desc="Move window to the right/move tab right in treetab"),
+
+    Key([mod, "shift"], "down",
+        lazy.layout.shuffle_down(),
+        lazy.layout.section_down().when(layout=["treetab"]),
+        desc="Move window down/move down a section in treetab"
+    ),
+    Key([mod, "shift"], "up",
+        lazy.layout.shuffle_up(),
+        lazy.layout.section_up().when(layout=["treetab"]),
+        desc="Move window downup/move up a section in treetab"
+    ),
+
+
     # Toggle between split and unsplit sides of stack.
     # Split = all windows displayed
     # Unsplit = 1 window displayed, like Max layout, but still with
     # multiple stack panes
-    Key(
-        [mod, "shift"],
-        "Return",
-        lazy.layout.toggle_split(),
-        desc="Toggle between split and unsplit sides of stack",
+    Key([mod, "shift"], "space", lazy.layout.toggle_split(), desc="Toggle between split and unsplit sides of stack"),
+
+    # Grow/shrink windows left/right.
+    # This is mainly for the 'monadtall' and 'monadwide' layouts
+    # although it does also work in the 'bsp' and 'columns' layouts.
+    Key([mod], "equal",
+        lazy.layout.grow_left().when(layout=["bsp", "columns"]),
+        lazy.layout.grow().when(layout=["monadtall", "monadwide"]),
+        desc="Grow window to the left"
     ),
-    Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
-    # Toggle between different layouts as defined below
-    Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
-    Key([mod], "q", lazy.window.kill(), desc="Kill focused window"),
-    Key(
-        [mod],
-        "f",
-        lazy.window.toggle_fullscreen(),
-        desc="Toggle fullscreen on the focused window",
+    Key([mod], "minus",
+        lazy.layout.grow_right().when(layout=["bsp", "columns"]),
+        lazy.layout.shrink().when(layout=["monadtall", "monadwide"]),
+        desc="Grow window to the left"
     ),
-    Key(
-        [mod],
-        "t",
-        lazy.window.toggle_floating(),
-        desc="Toggle floating on the focused window",
-    ),
-    Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
-    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
-    Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
-    Key([mod], "a", lazy.spawn("/home/shorya/.config/rofi/launchers/launcher.sh")),
-    Key([mod], "p", lazy.spawn("flameshot gui")),
-    # Set volume
-    Key(
-        [],
-        "XF86AudioRaiseVolume",
-        lazy.spawn("/home/shorya/.dotfiles/qtile/scripts/volume_control.sh up"),
-    ),
-    Key(
-        [],
-        "XF86AudioLowerVolume",
-        lazy.spawn("/home/shorya/.dotfiles/qtile/scripts/volume_control.sh down"),
-    ),
-    Key(
-        [],
-        "XF86AudioMute",
-        lazy.spawn("/home/shorya/.dotfiles/qtile/scripts/volume_control.sh mute"),
-    ),
-    # Set brightness
-    Key(
-        [],
-        "XF86MonBrightnessUp",
-        lazy.spawn("/home/shorya/.dotfiles/qtile/scripts/brightness_contorl.sh up"),
-    ),
-    Key(
-        [],
-        "XF86MonBrightnessDown",
-        lazy.spawn("/home/shorya/.dotfiles/qtile/scripts/brightness_contorl.sh down"),
-    ),
-    # Connect wifi
-    Key([mod], "m", lazy.spawn("networkmanager_dmenu")),
-    # power menu
-    Key(
-        [mod, "shift"],
-        "q",
-        lazy.spawn("/home/shorya/.config/rofi/powermenu/launcher.sh"),
-    ),
-    # wallpaper selector
-    Key(
-        [mod],
-        "w",
-        lazy.spawn("/home/shorya/.config/rofi/wallpaper/launcher.sh"),
-    ),
-    # live
-    Key(
-        [mod],
-        "w",
-        lazy.spawn("/home/shorya/.config/rofi/wallpaper/launcher.sh"),
-    ),  # if using dmenu version
+
+    # Grow windows up, down, left, right.  Only works in certain layouts.
+    # Works in 'bsp' and 'columns' layout.
+    Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Grow window to the left"),
+    Key([mod, "control"], "l", lazy.layout.grow_right(), desc="Grow window to the right"),
+    Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Grow window down"),
+    Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
+    Key([mod], "n", lazy.layout.reset(), desc="Reset all window sizes"),
+    Key([mod], "m", lazy.layout.maximize(), desc='Toggle between min and max sizes'),
+    Key([mod], "t", lazy.window.toggle_floating(), desc='toggle floating'),
+    Key([mod], "f", maximize_by_switching_layout(), lazy.window.toggle_fullscreen(), desc='toggle fullscreen'),
+    Key([mod, "shift"], "m", minimize_all(), desc="Toggle hide/show all windows on current group"),
+
+    # Switch focus of monitors
+    # Key([mod], "period", lazy.next_screen(), desc='Move focus to next monitor'),
+    # Key([mod], "comma", lazy.prev_screen(), desc='Move focus to prev monitor'),
+
+
+    # Volume & brightness controls
+    Key([], "XF86AudioRaiseVolume", lazy.spawn("volume up"), desc="Increase volume"),
+    Key([], "XF86AudioLowerVolume", lazy.spawn("volume down"), desc="Decrease volume"),
+    Key([], "XF86AudioMute", lazy.spawn("volume mute"), desc="Toggle mute"),
+    Key([], "XF86MonBrightnessUp", lazy.spawn("backlight up"), desc="Increase brightness"),
+    Key([], "XF86MonBrightnessDown", lazy.spawn("backlight down"), desc="Decrease brightness"),
 ]
 
 # Add key bindings to switch VTs in Wayland.
@@ -177,13 +207,13 @@ layout_theme = {
 }
 
 layouts = [
-    # layout.Columns(**layout_theme),
-    # layout.Max(),
+     layout.MonadTall(**layout_theme),
+     layout.Columns(**layout_theme),
+     layout.Max(),
     # Try more layouts by unleashing below layouts.
     # layout.Stack(num_stacks=2),
     # layout.Bsp(),
-    # layout.Matrix(),
-    layout.MonadTall(**layout_theme),
+    # layout.Matrix(),    
     # layout.MonadWide(),
     # layout.RatioTile(),
     # layout.Tile(),
@@ -201,32 +231,32 @@ extension_defaults = widget_defaults.copy()
 
 
 # helper func for statusbar
-def get_media_title_and_bar():
-    title = subprocess.getoutput("playerctl metadata --format '{{title}}'")
-    if title == "No players found":
-        return ""
-    if title == "No player could handle this command":
-        return ""
+# def get_media_title_and_bar():
+#     title = subprocess.getoutput("playerctl metadata --format '{{title}}'")
+#     if title == "No players found":
+#         return ""
+#     if title == "No player could handle this command":
+#         return ""
 
-    try:
-        position = float(subprocess.getoutput("playerctl position"))
-        length_str = subprocess.getoutput("playerctl metadata mpris:length")
-        length = int(length_str) / 1_000_000 if length_str.isdigit() else 0
+#     try:
+#         position = float(subprocess.getoutput("playerctl position"))
+#         length_str = subprocess.getoutput("playerctl metadata mpris:length")
+#         length = int(length_str) / 1_000_000 if length_str.isdigit() else 0
 
-        if length == 0:
-            return title
+#         if length == 0:
+#             return title
 
-        percent = position / length
-        bar_length = 20
-        filled = int(percent * bar_length)
-        empty = bar_length - filled
+#         percent = position / length
+#         bar_length = 20
+#         filled = int(percent * bar_length)
+#         empty = bar_length - filled
 
-        bar = "■" * filled + "▯" * empty
+#         bar = "■" * filled + "▯" * empty
 
-        return f"🎵 {title}"
+#         return f"🎵 {title}"
 
-    except:
-        return title
+#     except:
+#         return title
 
 
 screens = [
@@ -251,26 +281,26 @@ screens = [
                 ),
                 widget.Spacer(length=12),
                 widget.Spacer(),
-                widget.GenPollText(
-                    update_interval=2,
-                    fontsize=15,
-                    foreground="#ffffff",
-                    func=get_media_title_and_bar,
-                ),
+                # widget.GenPollText(
+                #     update_interval=2,
+                #     fontsize=15,
+                #     foreground="#ffffff",
+                #     func=get_media_title_and_bar,
+                # ),
                 widget.Spacer(),
                 widget.Systray(),
-                widget.Battery(
-                    format="{char} {percent:2.0%}",
-                    # font="Noto Color Emoji",  # emoji-supporting font
-                    fontsize=18,
-                    charge_char="⚡",
-                    discharge_char="",
-                    empty_char="☠",
-                    full_char="✔",
-                    show_short_text=False,
-                    update_interval=30,
-                    # padding=10,
-                ),
+                # widget.Battery(
+                #     format="{char} {percent:2.0%}",
+                #     # font="Noto Color Emoji",  # emoji-supporting font
+                #     fontsize=18,
+                #     charge_char="⚡",
+                #     discharge_char="",
+                #     empty_char="☠",
+                #     full_char="✔",
+                #     show_short_text=False,
+                #     update_interval=30,
+                #     # padding=10,
+                # ),
                 widget.Clock(
                     format="%a %H:%M",
                     fontsize=18,
@@ -282,13 +312,13 @@ screens = [
                     padding=10,
                     mouse_callbacks={
                         "Button1": lazy.spawn(
-                            "/home/shorya/.config/rofi/powermenu/launcher.sh"
+                            "/home/pio/.config/rofi/powermenu/launcher.sh"
                         )
                     },
                 ),
                 widget.Spacer(10),
             ],
-            50,  # Bar Height
+            35,  # Bar Height
             background="#1a161c",
             margin=[10, 20, 0, 20],
             # background="#1a161c0",
