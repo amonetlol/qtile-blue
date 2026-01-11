@@ -49,3 +49,46 @@ vim.keymap.set({ "n", "i", "v" }, "<C-s>", "<Cmd>w<CR>", { noremap = true, silen
 
 -- Ctrl + Q → Salvar e sair (:wq)
 vim.keymap.set("n", "<C-q>", "<Cmd>wqa<CR>", { noremap = true, silent = true })
+
+-- ╔══════════════════════════════════════════════════════════════╗
+-- ║                      ABRIR TERMINAL                          ║
+-- ╚══════════════════════════════════════════════════════════════╝
+
+-- Ctrl + \ (backtick) → Toggle terminal (abre/fecha)
+vim.keymap.set({ "n", "t" }, "<C-\\>", "<Cmd>ToggleTerm<CR>", {
+  noremap = true,
+  silent = true,
+  desc = "Toggle terminal (horizontal split)",
+})
+
+-- ╔══════════════════════════════════════════════════════════════╗
+-- ║                      NAVEGAÇÃO NAS ABAS (BUFFERLINE)         ║
+-- ╚══════════════════════════════════════════════════════════════╝
+
+-- Próxima aba (Next buffer)
+vim.keymap.set("n", "<Tab>", "<Cmd>BufferLineCycleNext<CR>", {
+  noremap = true,
+  silent = true,
+  desc = "Próxima aba",
+})
+
+-- Aba anterior (Prev buffer)
+vim.keymap.set("n", "<S-Tab>", "<Cmd>BufferLineCyclePrev<CR>", {
+  noremap = true,
+  silent = true,
+  desc = "Aba anterior",
+})
+
+-- Pin/Despin aba atual (Toggle Pin)
+vim.keymap.set("n", "<leader>bp", "<Cmd>BufferLineTogglePin<CR>", {
+  noremap = true,
+  silent = true,
+  desc = "Pin/Despin aba",
+})
+
+-- Fechar todas as abas não-pinned (Delete non-pinned buffers)
+vim.keymap.set("n", "<leader>bP", "<Cmd>BufferLineGroupClose ungrouped<CR>", {
+  noremap = true,
+  silent = true,
+  desc = "Fechar abas não-pinned",
+})
