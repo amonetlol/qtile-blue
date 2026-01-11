@@ -21,6 +21,8 @@ myEditor    = "kitty -e nvim"            # My editor of choice
 myLauncher  = "/home/pio/.config/rofi/launchers/launcher.sh"            # My launcher of choice
 #myLauncher  = "rofi -show drun -config ~/.config/iSettings/themes/nordico/rofi/launcher.rasi"
 myExplorer  = "thunar"
+powerMenu   = "/home/pio/.config/rofi/powermenu/launcher.sh"
+myWallpaper = "/home/pio/.config/rofi/wallpaper/launcher.sh"
 
 
 #---------------------- Define useful functions ----------------------#
@@ -62,7 +64,10 @@ keys = [
     Key([mod, "shift"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([], "Print", lazy.spawn("/home/pio/.bin/maimshot"), desc="Screenshot menu"),
     #Key([mod, alt], "x", lazy.spawn("/home/pio/.bin/pmenu"), desc="Logout menu"),
-    Key([mod, alt], "x", lazy.spawn("/home/pio/.config/iSettings/rofi/powermenu.sh"), desc="Logout menu"),
+    Key([mod, alt], "x", lazy.spawn(powerMenu), desc="Logout menu"),
+
+    # wallpaper selector
+    Key([alt],"w", lazy.spawn(myWallpaper), desc="set wallpaper"),
     
     # Window management
     Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
