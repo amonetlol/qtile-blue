@@ -36,3 +36,16 @@ end)
 vim.keymap.set("n", "<leader>bb", function()
   vim.cmd("e #")
 end)
+
+-- Focar no Neo-tree (ou abrir se estiver fechado)
+vim.keymap.set("n", "<leader>t", "<Cmd>NvimTreeFocus<CR>")
+
+-- ╔══════════════════════════════════════════════════════════════╗
+-- ║                SALVAR E SAIR (Ctrl + S / Ctrl + Q)           ║
+-- ╚══════════════════════════════════════════════════════════════╝
+
+-- Ctrl + S → Salvar o buffer atual (:w)
+vim.keymap.set({ "n", "i", "v" }, "<C-s>", "<Cmd>w<CR>", { noremap = true, silent = true })
+
+-- Ctrl + Q → Salvar e sair (:wq)
+vim.keymap.set("n", "<C-q>", "<Cmd>wqa<CR>", { noremap = true, silent = true })
