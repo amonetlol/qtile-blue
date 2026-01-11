@@ -1,0 +1,56 @@
+git clone https://github.com/amonetlol/fonts ~/.fonts && fc-cache -vf
+
+xdg-user-dirs-update
+
+---------------
+
+Dependencias:
+
+ttf-nerd-fonts-symbols
+polybar
+xf86-input-vmmouse
+xclip
+qtile
+python-pynvim
+python-dbus-fast python-psutil
+luarocks lua51 python-pip rg fd fzf nodejs npm tree-sitter-cli feh ripgrep xdotool prettier python-isort stylua python-lsp-black tree neofetch bat visual-studio-code-bin jq numlockx
+
+---------------
+
+/etc/pacman.conf
+[archcraft]
+SigLevel = Optional TrustAll
+Server = https://packages.archcraft.io/$arch
+
+archcraft-mirrorlist
+archcraft-sddm-theme
+
+---------------
+
+sudo mkdir -p /etc/sddm.conf.d/
+/etc/sddm.conf.d/sddm.conf
+
+[Theme]
+# Nome do tema que fica em /usr/share/sddm/themes/
+Current=archcraft
+CursorTheme=Qogirr
+Font=Iosevka,10,-1,0,50,0,0,0,0,0
+
+[General]
+# Ativa suporte para High DPI se necessário
+Numlock=on
+HaltCommand=/usr/bin/systemctl poweroff
+RebootCommand=/usr/bin/systemctl reboot
+
+[Users]
+# Usuário que aparecerá por padrão
+MaximumUid=60513
+MinimumUid=1000
+---------------
+
+
+
+
+
+
+
