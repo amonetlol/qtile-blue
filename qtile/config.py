@@ -18,7 +18,7 @@ myTerm2     = "alacritty"
 #myTerm2     = "alacritty --config-file /home/pio/.config/iSettings/alacritty/alacritty.toml"
 myBrowser   = "firefox"                   # My browser of choice
 myEditor    = "kitty -e nvim"            # My editor of choice
-myLauncher  = "rofi -show drun"            # My launcher of choice
+myLauncher  = "/home/pio/.config/rofi/launchers/launcher.sh"            # My launcher of choice
 #myLauncher  = "rofi -show drun -config ~/.config/iSettings/themes/nordico/rofi/launcher.rasi"
 myExplorer  = "thunar"
 
