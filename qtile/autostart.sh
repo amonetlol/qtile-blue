@@ -14,6 +14,11 @@ if ! pgrep -u "$USER" -x mate-polkit > /dev/null; then
     /usr/lib/mate-polkit/mate-polkit &
 fi
 
+# Xfce-polkit
+if ! pgrep -u "$USER" -x xfce-polkit > /dev/null; then
+    /usr/lib/xfce-polkit/xfce-polkit &
+fi
+
 # ===== WALLPAPER ALEATÓRIO COM FEH =====
 #setfeh.sh &
 #sh ~/.fehbg
