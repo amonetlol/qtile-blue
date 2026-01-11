@@ -208,7 +208,7 @@ for i in groups:
 
 layout_theme = {
     "border_width": 0,
-    "margin": 20,
+    "margin": 10,
 }
 
 layouts = [
