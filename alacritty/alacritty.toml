@@ -16,7 +16,7 @@ blur = true
 option_as_alt = "Both"
 
 [font]
-size=13
+size=11
 
 [font.normal]
 family = "JetBrains Mono"
