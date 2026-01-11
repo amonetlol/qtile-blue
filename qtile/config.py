@@ -284,6 +284,22 @@ screens = [
                     padding=5,
                     visible_groups=["1", "2", "3", "4", "5"],
                 ),
+                widget.Memory(
+                    # Ícone + porcentagem (espaço depois do ícone é importante)
+                    format=" {MemPercent:.0f}%",
+                    # Medida em GB ou MB (não muda muito a porcentagem, mas deixa limpo)
+                    measure_mem="G",
+                    # Atualiza a cada 2 segundos (economiza CPU)
+                    update_interval=2,                    
+                    fontsize=17,
+                    padding=10,
+                    foreground="#6c7086",
+                    # background="#000000.3",  # fundo semi-transparente se quiser                    
+                    mouse_callbacks={
+                        "Button1": lambda: qtile.cmd_spawn("alacritty -e htop"),
+                        "Button3": lambda: qtile.cmd_spawn("alacritty -e btop"),
+                    },
+                ),
                 widget.Spacer(length=12),
                 widget.Spacer(),
                 # widget.GenPollText(
